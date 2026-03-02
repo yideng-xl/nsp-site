@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skills — NSP Registry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="grid-bg"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span></a>
+      <ul class="nav-links">
+        <li><a href="skills.html" style="color:var(--cyan)">Skills</a></li>
+        <li><a href="publish.html">Publish</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="https://github.com/yideng-xl/nsp-clawhub-bridge" target="_blank" class="nav-cta">GitHub ↗</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <div class="hero-glow"></div>
+    <div class="container">
+      <h1>Skill <span class="accent">Registry</span></h1>
+      <p>150+ agent skills indexed on the edge. Search by capability, find in milliseconds.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <!-- Search bar -->
+      <div class="search-bar">
+        <input id="searchInput" type="text" placeholder="Search skills... e.g. slack, browser, finance" autocomplete="off" />
+        <button onclick="doSearch()">SEARCH</button>
+      </div>
+
+      <!-- Filter tags -->
+      <div style="text-align:center;margin-bottom:2rem;display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;" id="filterTags">
+        <button class="filter-btn active" onclick="quickSearch('', this)">All</button>
+        <button class="filter-btn" onclick="quickSearch('browser automation', this)">Browser</button>
+        <button class="filter-btn" onclick="quickSearch('communication slack email', this)">Communication</button>
+        <button class="filter-btn" onclick="quickSearch('github code development', this)">Dev Tools</button>
+        <button class="filter-btn" onclick="quickSearch('finance payment crypto', this)">Finance</button>
+        <button class="filter-btn" onclick="quickSearch('search web scraping', this)">Search</button>
+        <button class="filter-btn" onclick="quickSearch('calendar productivity tasks', this)">Productivity</button>
+        <button class="filter-btn" onclick="quickSearch('ai image video media', this)">AI / Media</button>
+      </div>
+
+      <!-- Meta info -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-dim);" id="resultMeta">Loading skills...</span>
+        <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-dim);">search_type: semantic_vector</span>
+      </div>
+
+      <!-- Grid -->
+      <div id="skillsGrid" class="skills-grid">
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+      </div>
+
+      <!-- Load more -->
+      <div class="center-mt" id="loadMoreWrap" style="display:none;">
+        <button class="btn btn-outline" onclick="loadMore()">Load More</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo">
+        <span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span>
+        <span class="footer-tagline">Nexus Skill Protocol</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="publish.html">Publish</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://nsp-registry.yideng-xl.workers.dev/api/v1" target="_blank">API</a>
+      </div>
+      <div class="footer-copy">© 2026 NSP · Built on Cloudflare Edge</div>
+    </div>
+  </footer>
+
+  <style>
+    .filter-btn {
+      background: var(--card-bg); border: 1px solid var(--border);
+      color: var(--text-dim); padding: 0.35rem 0.9rem;
+      border-radius: 100px; font-family: var(--font-mono);
+      font-size: 0.72rem; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--cyan); color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+  </style>
+
+  <script>
+    const API = 'https://nsp-registry.yideng-xl.workers.dev/api/v1';
+    let currentOffset = 0;
+    let currentQuery = '';
+    const LIMIT = 12;
+
+    async function fetchSkills(q, offset = 0) {
+      const url = q
+        ? `${API}/skills/search?q=${encodeURIComponent(q)}&limit=${LIMIT}&offset=${offset}`
+        : `${API}/skills/search?q=tool&limit=${LIMIT}&offset=${offset}`;
+      const res = await fetch(url);
+      return res.json();
+    }
+
+    function renderCard(s) {
+      const isFree = s.cost_model === 'free' || s.cost_model === '0';
+      const badgeClass = isFree ? 'cost-badge free' : 'cost-badge';
+      return `
+        <div class="skill-card">
+          <div class="skill-card-header">
+            <span class="skill-id">${s.id}</span>
+            <span class="${badgeClass}">${s.cost_model}</span>
+          </div>
+          <p class="skill-summary">${s.summary}</p>
+          <div class="skill-card-footer" style="display:flex;justify-content:space-between;align-items:center;">
+            <code class="install">${s.install_cmd}</code>
+            ${s.fit_score ? `<span style="font-size:0.7rem;color:var(--text-dim)">fit: ${(s.fit_score*100).toFixed(0)}%</span>` : ''}
+          </div>
+        </div>`;
+    }
+
+    async function doSearch() {
+      currentQuery = document.getElementById('searchInput').value.trim();
+      currentOffset = 0;
+      document.getElementById('skillsGrid').innerHTML = '<div class="loading-spinner">Scanning edge nodes...</div>';
+      document.getElementById('loadMoreWrap').style.display = 'none';
+      try {
+        const data = await fetchSkills(currentQuery, 0);
+        if (!data.success) throw new Error();
+        document.getElementById('resultMeta').textContent =
+          `${data.meta.total} skills found · tokens: ${data.meta.query_tokens_used}`;
+        document.getElementById('skillsGrid').innerHTML = data.data.map(renderCard).join('');
+        currentOffset = data.data.length;
+        if (data.meta.total > currentOffset) {
+          document.getElementById('loadMoreWrap').style.display = 'block';
+        }
+      } catch(e) {
+        document.getElementById('skillsGrid').innerHTML = '<div class="empty-state">Connection error. Please retry.</div>';
+      }
+    }
+
+    async function loadMore() {
+      const data = await fetchSkills(currentQuery, currentOffset);
+      if (data.success && data.data.length) {
+        document.getElementById('skillsGrid').innerHTML += data.data.map(renderCard).join('');
+        currentOffset += data.data.length;
+        if (currentOffset >= data.meta.total) {
+          document.getElementById('loadMoreWrap').style.display = 'none';
+        }
+      }
+    }
+
+    function quickSearch(q, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('searchInput').value = q;
+      doSearch();
+    }
+
+    // Realtime search
+    let timer;
+    document.getElementById('searchInput').addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(doSearch, 500);
+    });
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    doSearch();
+  </script>
+</body>
+</html>

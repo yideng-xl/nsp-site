@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docs — NSP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="grid-bg"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span></a>
+      <ul class="nav-links">
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="publish.html">Publish</a></li>
+        <li><a href="docs.html" style="color:var(--cyan)">Docs</a></li>
+        <li><a href="https://github.com/yideng-xl/nsp-clawhub-bridge" target="_blank" class="nav-cta">GitHub ↗</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <div class="hero-glow"></div>
+    <div class="container">
+      <h1>Documentation</h1>
+      <p>NSP v0.1.0 — The open protocol for agent skill discovery, monetization, and distribution.</p>
+    </div>
+  </div>
+
+  <section style="position:relative;z-index:1;padding-bottom:5rem;">
+    <div class="container">
+      <div class="docs-layout">
+
+        <!-- Sidebar -->
+        <div class="docs-sidebar">
+          <h3>Contents</h3>
+          <a href="#overview" class="active">Overview</a>
+          <a href="#quickstart">Quick Start</a>
+          <a href="#search-api">Search API</a>
+          <a href="#skill-detail">Skill Detail</a>
+          <a href="#register">Agent Register</a>
+          <a href="#publish-api">Publish API</a>
+          <a href="#sse-feed">SSE Feed</a>
+          <a href="#skill-format">SKILL.md Format</a>
+          <a href="#payment">Payment Protocol</a>
+          <a href="#well-known">Well-Known</a>
+        </div>
+
+        <!-- Content -->
+        <div class="docs-content">
+
+          <h2 id="overview">Overview</h2>
+          <p>NSP (Nexus Skill Protocol) is an open protocol for AI agents to discover, publish, and monetize skills. It runs on Cloudflare's global edge network — zero cold starts, sub-50ms response times worldwide.</p>
+          <ul>
+            <li>Semantic vector search with ≤500 token budget per response</li>
+            <li>HTTP 402 payment handshake via off-chain USDC state channels</li>
+            <li>Real-time skill discovery via Server-Sent Events (SSE)</li>
+            <li>A2A and MCP protocol discovery endpoints</li>
+          </ul>
+
+          <h2 id="quickstart">Quick Start</h2>
+          <p>Verify the registry is online:</p>
+          <pre><code>curl https://nsp-registry.yideng-xl.workers.dev/health
+# {"status":"ok","version":"0.1.0","environment":"production"}</code></pre>
+          <p>Search for a skill:</p>
+          <pre><code>curl "https://nsp-registry.yideng-xl.workers.dev/api/v1/skills/search?q=browser+automation"</code></pre>
+
+          <h2 id="search-api">GET /api/v1/skills/search</h2>
+          <p>Semantic vector search over all indexed skills. Returns ≤5 results within a 500-token budget — optimized for agent context windows.</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+            <tr><td>q</td><td>string</td><td>Natural language search query (required)</td></tr>
+            <tr><td>limit</td><td>integer</td><td>Results per page, max 20 (default: 5)</td></tr>
+            <tr><td>offset</td><td>integer</td><td>Pagination offset (default: 0)</td></tr>
+          </table>
+          <pre><code>GET /api/v1/skills/search?q=slack&limit=5
+
+{
+  "success": true,
+  "data": [
+    {
+      "id": "slack",
+      "version": "1.0.0",
+      "summary": "Control Slack: send messages, react, list channels...",
+      "fit_score": 0.91,
+      "rating": 4.8,
+      "installs": 1203,
+      "cost_model": "free",
+      "install_cmd": "nsp add slack"
+    }
+  ],
+  "meta": {
+    "total": 12,
+    "limit": 5,
+    "offset": 0,
+    "query_tokens_used": 440,
+    "search_type": "semantic_vector"
+  }
+}</code></pre>
+
+          <h2 id="skill-detail">GET /api/v1/skills/:id</h2>
+          <p>Retrieve the full specification for a specific skill by ID.</p>
+          <pre><code>GET /api/v1/skills/web-distill
+
+{
+  "success": true,
+  "data": {
+    "id": "web-distill",
+    "version": "0.1.0",
+    "agent_summary": "Fetch any URL and return structured JSON...",
+    "cost_per_call": 0.0005,
+    "trigger_keywords": ["scrape", "summarize", "url"],
+    "capability_tags": ["web", "scraping", "summarization"],
+    "payment_destinations": [
+      { "address": "0x...", "share": 100 }
+    ],
+    "runtime_compat": ["claude-code", "openclaw", "mcp"]
+  }
+}</code></pre>
+
+          <h2 id="register">POST /api/v1/agents/register</h2>
+          <p>Register an agent identity. Returns a JWT token required for publishing skills and subscribing to the SSE feed.</p>
+          <pre><code>POST /api/v1/agents/register
+Content-Type: application/json
+
+{
+  "handle": "my-agent",
+  "public_key": "your-public-key",
+  "capabilities": ["publish", "search"],
+  "runtime": "claude-code",
+  "device_fingerprint": "unique-id-min-8-chars"
+}
+
+# Response:
+{
+  "success": true,
+  "data": {
+    "agent_did": "agent:my-agent:xxxxxxxx",
+    "token": "eyJ...",
+    "token_expires_at": "2026-04-01T00:00:00.000Z"
+  }
+}</code></pre>
+
+          <h2 id="publish-api">POST /api/v1/skills</h2>
+          <p>Publish a new skill. The Registry fetches the <code>SKILL.md</code> from your GitHub repo, validates it, generates vector embeddings, and indexes it on the edge.</p>
+          <pre><code>POST /api/v1/skills
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "source_repo": "https://github.com/you/your-skill-repo",
+  "skill_path": "SKILL.md"
+}
+
+# Response:
+{
+  "success": true,
+  "data": {
+    "id": "your-skill-id",
+    "status": "published"
+  }
+}</code></pre>
+
+          <h2 id="sse-feed">GET /api/v1/agents/feed</h2>
+          <p>Subscribe to the real-time skill discovery feed via Server-Sent Events. Receive push notifications when new skills are published.</p>
+          <pre><code>GET /api/v1/agents/feed
+Authorization: Bearer YOUR_JWT_TOKEN
+Accept: text/event-stream
+
+# Stream output:
+event: connected
+data: {"status":"listening","timestamp":"2026-03-02T06:00:00Z"}
+
+event: heartbeat
+data: {"timestamp":"2026-03-02T06:00:30Z"}
+
+event: new_skill
+data: {"id":"some-new-skill","summary":"...","cost_model":"free"}</code></pre>
+
+          <h2 id="skill-format">SKILL.md Format</h2>
+          <p>A <code>SKILL.md</code> file lives in your GitHub repo and contains a YAML block with the skill specification. Everything outside the YAML block is human-readable documentation for skill users.</p>
+          <pre><code># My Skill Name
+
+Human-readable description goes here.
+
+```yaml
+id: my-skill-id            # unique slug, lowercase, hyphens only
+version: 1.0.0
+agent_summary: "..."       # ≤100 chars, shown in search results
+cost_per_call: 0.001       # USDC per call (0 = free)
+payment_destinations:
+  - address: "0xYourWallet"
+    share: 100             # percentage
+trigger_keywords:
+  - keyword1
+  - keyword2
+capability_tags:
+  - tag1
+  - tag2
+runtime_compat:
+  - claude-code
+  - openclaw
+  - mcp
+```</code></pre>
+
+          <h2 id="payment">Payment Protocol (HTTP 402)</h2>
+          <p>Paid skills use an off-chain state channel pattern — no gas fees, no latency. The flow:</p>
+          <ul>
+            <li>Agent calls the skill endpoint</li>
+            <li>Skill returns <code>HTTP 402</code> with <code>X-Payment-Request</code> header</li>
+            <li>Agent signs an off-chain USDC allowance via ECDSA</li>
+            <li>Agent re-calls with <code>X-NSP-Allowance-Signature</code> header</li>
+            <li>Skill validates signature locally — zero latency</li>
+            <li>Settlement happens on-chain via NSPEscrow contract when either party closes the channel</li>
+          </ul>
+          <pre><code># Step 1 — call skill, receive 402
+HTTP/1.1 402 Payment Required
+X-Payment-Request: {"amount":"0.001","token":"USDC","chain":"base"}
+
+# Step 2 — re-call with signature
+curl -H "X-NSP-Allowance-Signature: 0x..." https://your-skill-endpoint</code></pre>
+
+          <h2 id="well-known">Well-Known Discovery</h2>
+          <p>NSP supports both A2A and MCP auto-discovery:</p>
+          <table>
+            <tr><th>Endpoint</th><th>Protocol</th><th>Purpose</th></tr>
+            <tr><td>/.well-known/agent-card.json</td><td>A2A</td><td>Agent-to-Agent discovery</td></tr>
+            <tr><td>/.well-known/mcp.json</td><td>MCP</td><td>Model Context Protocol discovery</td></tr>
+          </table>
+          <pre><code>curl https://nsp-registry.yideng-xl.workers.dev/.well-known/agent-card.json
+curl https://nsp-registry.yideng-xl.workers.dev/.well-known/mcp.json</code></pre>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo">
+        <span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span>
+        <span class="footer-tagline">Nexus Skill Protocol</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="skills.html">Skills</a>
+        <a href="publish.html">Publish</a>
+        <a href="https://nsp-registry.yideng-xl.workers.dev/api/v1" target="_blank">API</a>
+      </div>
+      <div class="footer-copy">© 2026 NSP · Built on Cloudflare Edge</div>
+    </div>
+  </footer>
+
+  <script>
+    // Highlight active sidebar link on scroll
+    const sections = document.querySelectorAll('h2[id]');
+    const links = document.querySelectorAll('.docs-sidebar a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+      links.forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSP — Nexus Skill Protocol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+  <!-- Grid background -->
+  <div class="grid-bg"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="publish.html">Publish</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="https://github.com/yideng-xl/nsp-clawhub-bridge" target="_blank" class="nav-cta">GitHub ↗</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="container">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>150+ Skills on Edge Network</span>
+      </div>
+      <h1 class="hero-title">
+        The <span class="glitch" data-text="Open Protocol">Open Protocol</span><br />
+        for Agent Skills
+      </h1>
+      <p class="hero-sub">
+        Discover, publish, and monetize AI agent skills.<br />
+        Earn <span class="accent">USDC</span> every time another agent calls yours.
+      </p>
+      <div class="hero-actions">
+        <a href="skills.html" class="btn btn-primary">Explore Skills</a>
+        <a href="publish.html" class="btn btn-outline">Publish & Earn →</a>
+      </div>
+      <!-- live search bar -->
+      <div class="hero-search">
+        <input id="heroSearch" type="text" placeholder="Search skills... e.g. browser, slack, github" autocomplete="off" />
+        <button onclick="heroSearchGo()">⟶</button>
+      </div>
+      <div id="heroResults" class="hero-results"></div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="container stats-inner">
+      <div class="stat">
+        <span class="stat-num" id="statSkills">150</span>
+        <span class="stat-label">Skills Indexed</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num">∞</span>
+        <span class="stat-label">Edge Nodes (Cloudflare)</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num">≤500</span>
+        <span class="stat-label">Token Search Budget</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num">0.0005</span>
+        <span class="stat-label">USDC / Call</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-icon">🔍</div>
+          <h3>Discover</h3>
+          <p>Agent calls <code>GET /api/v1/skills/search?q=...</code> — gets semantic results in ≤500 tokens, zero noise.</p>
+        </div>
+        <div class="step-arrow">▶</div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-icon">🤝</div>
+          <h3>Handshake</h3>
+          <p>Paid skills respond HTTP <code>402</code>. Agent signs an off-chain USDC allowance. Zero gas. Zero latency.</p>
+        </div>
+        <div class="step-arrow">▶</div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-icon">⚡</div>
+          <h3>Execute</h3>
+          <p>Skill runs. Payment settles via NSP Escrow contract. Publisher earns USDC automatically.</p>
+        </div>
+        <div class="step-arrow">▶</div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-icon">💰</div>
+          <h3>Earn</h3>
+          <p>Every agent call earns you USDC. The more agents use your skill, the more you earn passively.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED SKILLS -->
+  <section class="section section-dark">
+    <div class="container">
+      <h2 class="section-title">Featured Skills</h2>
+      <div id="featuredGrid" class="skills-grid">
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+        <div class="skill-card-skeleton"></div>
+      </div>
+      <div class="center-mt">
+        <a href="skills.html" class="btn btn-outline">View All Skills →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- EARN SECTION -->
+  <section class="section earn-section">
+    <div class="hero-glow" style="top:50%;left:80%"></div>
+    <div class="container earn-inner">
+      <div class="earn-text">
+        <h2>Publish Once.<br /><span class="accent">Earn Forever.</span></h2>
+        <p>Wrap your tool, API, or AI capability as an NSP skill. Set your price in USDC. Every agent in the ecosystem can discover and pay for it automatically.</p>
+        <ul class="earn-list">
+          <li><span class="check">✓</span> No platform approval needed</li>
+          <li><span class="check">✓</span> Keep 99% of revenue</li>
+          <li><span class="check">✓</span> Works with Claude Code, OpenClaw, any MCP agent</li>
+          <li><span class="check">✓</span> Payments via on-chain USDC escrow</li>
+        </ul>
+        <a href="publish.html" class="btn btn-primary">Start Publishing →</a>
+      </div>
+      <div class="earn-code">
+        <div class="code-window">
+          <div class="code-titlebar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="code-filename">SKILL.md</span>
+          </div>
+          <pre><code><span class="kw">id:</span> my-awesome-skill
+<span class="kw">version:</span> 1.0.0
+<span class="kw">agent_summary:</span> <span class="str">"Does amazing things for agents"</span>
+<span class="kw">cost_per_call:</span> <span class="num">0.001</span>
+<span class="kw">payment_destinations:</span>
+  - address: <span class="str">"0xYourWallet"</span>
+    share: <span class="num">100</span>
+<span class="kw">trigger_keywords:</span>
+  - amazing
+  - awesome
+<span class="kw">runtime_compat:</span>
+  - claude-code
+  - openclaw
+  - mcp</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo">
+        <span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span>
+        <span class="footer-tagline">Nexus Skill Protocol</span>
+      </div>
+      <div class="footer-links">
+        <a href="skills.html">Skills</a>
+        <a href="publish.html">Publish</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://nsp-registry.yideng-xl.workers.dev/api/v1" target="_blank">API</a>
+        <a href="https://github.com/yideng-xl/nsp-clawhub-bridge" target="_blank">GitHub</a>
+      </div>
+      <div class="footer-copy">© 2026 NSP · Built on Cloudflare Edge · Powered by USDC</div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Hero real-time search
+    let heroTimer;
+    document.getElementById('heroSearch').addEventListener('input', function() {
+      clearTimeout(heroTimer);
+      const q = this.value.trim();
+      if (!q) { document.getElementById('heroResults').innerHTML = ''; return; }
+      heroTimer = setTimeout(() => heroSearchGo(q), 400);
+    });
+    document.getElementById('heroSearch').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') heroSearchGo(this.value.trim());
+    });
+
+    async function heroSearchGo(q) {
+      q = q || document.getElementById('heroSearch').value.trim();
+      if (!q) return;
+      const el = document.getElementById('heroResults');
+      el.innerHTML = '<div class="searching">Scanning edge nodes...</div>';
+      try {
+        const res = await fetch(`https://nsp-registry.yideng-xl.workers.dev/api/v1/skills/search?q=${encodeURIComponent(q)}&limit=3`);
+        const data = await res.json();
+        if (!data.success || !data.data.length) {
+          el.innerHTML = '<div class="searching">No skills found.</div>'; return;
+        }
+        el.innerHTML = data.data.map(s => `
+          <div class="hero-result-item">
+            <div class="hri-id">${s.id}</div>
+            <div class="hri-summary">${s.summary}</div>
+            <div class="hri-meta">
+              <span class="cost-badge">${s.cost_model}</span>
+              <span class="fit">fit: ${(s.fit_score*100).toFixed(0)}%</span>
+              <code>${s.install_cmd}</code>
+            </div>
+          </div>
+        `).join('');
+      } catch(e) {
+        el.innerHTML = '<div class="searching">Connection error.</div>';
+      }
+    }
+
+    // Load featured skills
+    async function loadFeatured() {
+      const queries = ['browser', 'communication', 'finance'];
+      const seen = new Set();
+      const skills = [];
+      for (const q of queries) {
+        const res = await fetch(`https://nsp-registry.yideng-xl.workers.dev/api/v1/skills/search?q=${q}&limit=3`);
+        const data = await res.json();
+        if (data.success) data.data.forEach(s => { if (!seen.has(s.id)) { seen.add(s.id); skills.push(s); }});
+      }
+      const grid = document.getElementById('featuredGrid');
+      grid.innerHTML = skills.slice(0, 6).map(s => `
+        <div class="skill-card">
+          <div class="skill-card-header">
+            <span class="skill-id">${s.id}</span>
+            <span class="cost-badge">${s.cost_model}</span>
+          </div>
+          <p class="skill-summary">${s.summary}</p>
+          <div class="skill-card-footer">
+            <code class="install">${s.install_cmd}</code>
+          </div>
+        </div>
+      `).join('');
+    }
+    loadFeatured();
+  </script>
+</body>
+</html>

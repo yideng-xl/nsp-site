@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publish & Earn — NSP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="grid-bg"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span></a>
+      <ul class="nav-links">
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="publish.html" style="color:var(--cyan)">Publish</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="https://github.com/yideng-xl/nsp-clawhub-bridge" target="_blank" class="nav-cta">GitHub ↗</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <div class="hero-glow"></div>
+    <div class="container">
+      <h1>Publish & <span class="accent">Earn USDC</span></h1>
+      <p>Wrap any tool, API, or AI capability as an NSP skill. Set your price. Earn passively every time an agent calls it.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+
+      <!-- Revenue callout -->
+      <div style="background:var(--cyan-dim);border:1px solid rgba(0,255,231,0.2);border-radius:4px;padding:1.5rem 2rem;margin-bottom:4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+        <div style="font-size:2.5rem;">💰</div>
+        <div>
+          <div style="font-family:var(--font-head);color:var(--cyan);font-size:1rem;margin-bottom:0.3rem;">Revenue Split</div>
+          <div style="color:var(--text-dim);font-size:0.88rem;">You keep <strong style="color:#fff">99%</strong> of every call. NSP takes a flat <strong style="color:#fff">1%</strong> protocol fee — that's it. No monthly fees, no approval gates, no middlemen.</div>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <h2 class="section-title" style="text-align:left;margin-bottom:2rem;">3 Steps to Go Live</h2>
+
+      <div style="display:flex;flex-direction:column;gap:2rem;margin-bottom:5rem;">
+
+        <div style="display:grid;grid-template-columns:60px 1fr;gap:2rem;align-items:start;">
+          <div style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--cyan);opacity:0.4;line-height:1;">01</div>
+          <div>
+            <h3 style="font-family:var(--font-head);color:#fff;margin-bottom:0.75rem;font-size:1rem;">Create your SKILL.md</h3>
+            <p style="color:var(--text-dim);margin-bottom:1rem;font-size:0.88rem;">Add a <code>SKILL.md</code> file to any public GitHub repo. This is the single source of truth for your skill — metadata, pricing, and documentation all in one place.</p>
+            <div class="code-window">
+              <div class="code-titlebar">
+                <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                <span class="code-filename">your-repo/SKILL.md</span>
+              </div>
+              <pre><code><span class="kw">```yaml</span>
+<span class="kw">id:</span> my-weather-skill
+<span class="kw">version:</span> 1.0.0
+<span class="kw">agent_summary:</span> <span class="str">"Fetch real-time weather for any city. Returns temp, humidity, forecast."</span>
+<span class="kw">cost_per_call:</span> <span class="num">0.0005</span>
+<span class="kw">payment_destinations:</span>
+  - address: <span class="str">"0xYourEthereumWalletAddress"</span>
+    share: <span class="num">100</span>
+<span class="kw">trigger_keywords:</span>
+  - weather
+  - forecast
+  - temperature
+<span class="kw">capability_tags:</span>
+  - weather
+  - real-time-data
+<span class="kw">runtime_compat:</span>
+  - claude-code
+  - openclaw
+  - mcp
+<span class="kw">```</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:60px 1fr;gap:2rem;align-items:start;">
+          <div style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--cyan);opacity:0.4;line-height:1;">02</div>
+          <div>
+            <h3 style="font-family:var(--font-head);color:#fff;margin-bottom:0.75rem;font-size:1rem;">Register & Get a Token</h3>
+            <p style="color:var(--text-dim);margin-bottom:1rem;font-size:0.88rem;">Register your agent identity with the NSP Registry. This gives you a DID and JWT token that authorizes skill publishing.</p>
+            <div class="code-window">
+              <div class="code-titlebar">
+                <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                <span class="code-filename">terminal</span>
+              </div>
+              <pre><code>curl -X POST https://nsp-registry.yideng-xl.workers.dev/api/v1/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "handle": "your-agent-name",
+    "public_key": "your-public-key",
+    "capabilities": ["publish"],
+    "runtime": "node",
+    "device_fingerprint": "unique-device-id-min-8-chars"
+  }'
+
+<span class="str"># Response:</span>
+{
+  "success": true,
+  "data": {
+    "agent_did": <span class="str">"agent:your-agent-name:xxxxxxxx"</span>,
+    "token": <span class="str">"eyJ..."</span>,
+    "token_expires_at": <span class="str">"2026-04-01T00:00:00.000Z"</span>
+  }
+}</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:60px 1fr;gap:2rem;align-items:start;">
+          <div style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--cyan);opacity:0.4;line-height:1;">03</div>
+          <div>
+            <h3 style="font-family:var(--font-head);color:#fff;margin-bottom:0.75rem;font-size:1rem;">Publish to the Edge</h3>
+            <p style="color:var(--text-dim);margin-bottom:1rem;font-size:0.88rem;">Point the Registry at your GitHub repo. It fetches, validates, and indexes your skill in seconds — then distributes it across Cloudflare's global edge network.</p>
+            <div class="code-window">
+              <div class="code-titlebar">
+                <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                <span class="code-filename">terminal</span>
+              </div>
+              <pre><code>curl -X POST https://nsp-registry.yideng-xl.workers.dev/api/v1/skills \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_repo": "https://github.com/you/your-repo",
+    "skill_path": "SKILL.md"
+  }'
+
+<span class="str"># Your skill is now live. Agents worldwide can discover and pay for it.</span></code></pre>
+            </div>
+            <div style="margin-top:1rem;padding:1rem;background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.15);border-radius:3px;">
+              <span style="color:var(--green);font-family:var(--font-mono);font-size:0.78rem;">✓ Skill indexed on edge network in &lt;5 seconds</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;padding:3rem;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;">
+        <h2 style="font-family:var(--font-head);color:#fff;margin-bottom:1rem;">Ready to start earning?</h2>
+        <p style="color:var(--text-dim);margin-bottom:2rem;">Join the growing ecosystem of AI skill publishers.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+          <a href="docs.html" class="btn btn-outline">Read the Docs</a>
+          <a href="https://nsp-registry.yideng-xl.workers.dev/api/v1" target="_blank" class="btn btn-primary">View Live API</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo">
+        <span class="logo-bracket">[</span>NSP<span class="logo-bracket">]</span>
+        <span class="footer-tagline">Nexus Skill Protocol</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="skills.html">Skills</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://nsp-registry.yideng-xl.workers.dev/api/v1" target="_blank">API</a>
+      </div>
+      <div class="footer-copy">© 2026 NSP · Built on Cloudflare Edge · Powered by USDC</div>
+    </div>
+  </footer>
+</body>
+</html>
